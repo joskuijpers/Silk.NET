@@ -22,6 +22,10 @@ namespace Silk.NET.BuildTools.Common
     /// </summary>
     public static class Utilities
     {
+        internal static StreamWriter _lenientUnderscore = new("lenientUnderscore.txt") { AutoFlush = true };
+        internal static StreamWriter _findCommonPrefixMaxLen = new("findCommonPrefixMaxLen.txt") { AutoFlush = true };
+        internal static StreamWriter _findCommonPrefixOther = new("findCommonPrefixOther.txt") { AutoFlush = true };
+
         /// <summary>
         /// Gets a list of keywords in the C# language.
         /// </summary>
@@ -545,9 +549,10 @@ namespace Silk.NET.BuildTools.Common
         public static string FindCommonPrefix(List<string> names, bool allowFullMatch, bool allowLeadingDigits)
         {
             var commonPrefixFirstPass = FindCommonPrefix(names, allowFullMatch, names.Max(x => x.Length));
+            string? ret = null;
             if (allowLeadingDigits)
             {
-                return commonPrefixFirstPass;
+                ret = commonPrefixFirstPass;
             }
 
             var tgtPos = commonPrefixFirstPass.Length;
@@ -555,10 +560,18 @@ namespace Silk.NET.BuildTools.Common
             var startingWithDigit = names.Where(n => n.Length > tgtPos && char.IsDigit(n[tgtPos]));
             if (startingWithDigit.Any())
             {
-                return FindCommonPrefix(names, allowFullMatch, tgtPos - 1);
+                ret ??= FindCommonPrefix(names, allowFullMatch, tgtPos - 1);
             }
 
-            return commonPrefixFirstPass;
+            ret ??= commonPrefixFirstPass;
+            
+            lock (_findCommonPrefixOther)
+            {
+                _findCommonPrefixOther.WriteLine
+                    ($"{string.Join('\t', names)}\t{allowFullMatch}\t{allowLeadingDigits}\t{ret}");
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -593,16 +606,24 @@ namespace Silk.NET.BuildTools.Common
                 foundPrefix = prefix;
             }
 
+            string? ret = null;
             if (!foundPrefix.Contains('_'))
             {
-                return "";
+                ret = "";
             }
 
             if (foundPrefix.Length == minLen && allowFullMatch)
             {
-                return foundPrefix;
+                ret ??= foundPrefix;
             }
-            return foundPrefix.Substring(0, foundPrefix.LastIndexOf('_') + 1);
+            ret ??= foundPrefix.Substring(0, foundPrefix.LastIndexOf('_') + 1);
+
+            lock (_findCommonPrefixMaxLen)
+            {
+                _findCommonPrefixMaxLen.WriteLine($"{string.Join('\t', names)}\t{allowFullMatch}\t{maxLen}\t{ret}");
+            }
+
+            return ret;
         }
 
         /// <summary>
@@ -690,7 +711,7 @@ namespace Silk.NET.BuildTools.Common
             // - The regex ([\p{Ll}])([\p{Lu}]) has been added to replace lowercase letters followed by an uppercase letter with the 
             //   same sequence but with an underscore inbetween, 
             //   this fixes cases like SpvImageFormatR32ui being Spv_Image_FormatR32ui instead of Spv_Image_Format_R32ui
-            return Regex.Replace
+            var ret = Regex.Replace
             (
                 Regex.Replace
                 (
@@ -711,6 +732,13 @@ namespace Silk.NET.BuildTools.Common
                 @"[-\s]", 
                 "_"
             );
+
+            lock (_lenientUnderscore)
+            {
+                _lenientUnderscore.WriteLine($"{input}\t{ret}");
+            }
+
+            return ret;
         }
     }
 }

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Humanizer;
 using Silk.NET.BuildTools.Common;
@@ -15,6 +16,8 @@ namespace Silk.NET.BuildTools.Baking;
 
 public static class EnumPostProcessor
 {
+    internal static StreamWriter _stripCommonPrefix = new("stripCommonPrefix.txt") { AutoFlush = true };
+    internal static StreamWriter _enumTrimmingName = new("enumTrimmingName.txt") { AutoFlush = true };
     /// <summary>
     /// The trimming method. New trimming methods need to be added to the bottom so they have a higher number and thus
     /// more preference when adding obsolete attributes.
@@ -102,20 +105,26 @@ public static class EnumPostProcessor
             }
             else
             {
-                foreach (var tok in @enum.Tokens)
-                {   
-                    //If theres a prefix override for this enum,
-                    if(task.PrefixOverrides.ContainsKey(@enum.NativeName)) 
+                lock (_enumTrimmingName)
+                {
+                    foreach (var tok in @enum.Tokens)
                     {
-                        //Use the raw native name as the trimming name
-                        tok.TrimmingName = tok.NativeName;
-                        continue;
+                        //If theres a prefix override for this enum,
+                        if (task.PrefixOverrides.ContainsKey(@enum.NativeName))
+                        {
+                            //Use the raw native name as the trimming name
+                            tok.TrimmingName = tok.NativeName;
+                            _enumTrimmingName.WriteLine($"{string.Join('\t', task.PrefixOverrides.Select(x => $"{x.Key}\t{x.Value}"))}\t{tok.NativeName}\tfalse\t{tok.TrimmingName}");
+                            continue;
+                        }
+
+                        tok.TrimmingName = tok.NativeName.LenientUnderscore();
+                        _enumTrimmingName.WriteLine($"{string.Join('\t', task.PrefixOverrides.Select(x => $"{x.Key}\t{x.Value}"))}\t{tok.NativeName}\tfalse\t{tok.TrimmingName}");
                     }
 
-                    tok.TrimmingName = tok.NativeName.LenientUnderscore();
+                    enumTrimmingName = @enum.NativeName.LenientUnderscore();
+                    _enumTrimmingName.WriteLine($"{string.Join('\t', task.PrefixOverrides.Select(x => $"{x.Key}\t{x.Value}"))}\t{@enum.NativeName}\ttrue\t{enumTrimmingName}");
                 }
-
-                enumTrimmingName = @enum.NativeName.LenientUnderscore();
             }
 
             var prefix = @enum.Tokens.Count(y => y.TrimmingMethod is null) == 1
@@ -178,6 +187,14 @@ public static class EnumPostProcessor
             //If we have found a prefix
             if (prefix.Length > 0)
             {
+                if (method == NameMethod.Version218)
+                lock (_stripCommonPrefix)
+                {
+                    _stripCommonPrefix.WriteLine
+                    (
+                        $"{task.PrefixOverrides.Count}\t{string.Join('\t', task.PrefixOverrides.Select(x => $"{x.Key}\t{x.Value}"))}\t{string.Join('\t', @enum.Tokens.Select(x => x.TrimmingName))}\t{enumTrimmingName}\t{prefix}"
+                    );
+                }
                 // Generate the new trimmings from the untrimmed enums.
                 var newEnums = @enum.Tokens.Where(x => x.TrimmingMethod is null).Select
                 (
