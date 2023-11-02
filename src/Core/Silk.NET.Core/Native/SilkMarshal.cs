@@ -291,14 +291,11 @@ namespace Silk.NET.Core.Native
         /// <returns>The string read from memory.</returns>
         public static unsafe string? PtrToString(nint input, NativeStringEncoding encoding = NativeStringEncoding.Ansi)
         {
-            Console.WriteLine($"in ptr to string: {input}");
             if (input == 0)
             {
-                Console.WriteLine($"null");
                 return null;
             }
             
-            Console.WriteLine("got to the decoding part, sick");
             var var = encoding switch
             {
                 NativeStringEncoding.BStr      => BStrToString(input),
@@ -309,7 +306,6 @@ namespace Silk.NET.Core.Native
                 NativeStringEncoding.WinString => (*(WinString*)&input).ToString(),
                 _ => ThrowInvalidEncoding<string>()
             };
-            Console.WriteLine($"got {var}");
             return var;
 
             static unsafe string BStrToString(nint ptr)

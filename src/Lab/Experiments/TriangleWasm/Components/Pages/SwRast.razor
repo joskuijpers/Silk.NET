@@ -1,0 +1,32 @@
+﻿@page "/swrast"
+@using Silk.NET.Core.Loader
+@using Silk.NET.Core.Native
+@using Silk.NET.Windowing
+@inject IJSRuntime JSRuntime
+
+
+<PageTitle>Software Rasterizer Demo</PageTitle>
+
+<h1>Software Rasterizer Demo</h1>
+
+<p>Use WASD to move about the scene and the arrow keys to change camera angle.</p>
+
+<br />
+
+<canvas style="width: 1920px; height: 1080px;" id="canvas" oncontextmenu="event.preventDefault()" onloadend="console.log('added canvas: ' + (Module['canvas'] = document.getElementById('canvas')))" />
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+        await JSRuntime.InvokeVoidAsync("setCanvas", typeof(SwRast).Assembly.GetName().Name, $"{typeof(SwRast).FullName}.CanvasDropped");
+        SearchPathContainer.Platform = UnderlyingPlatform.Browser;
+        SoftwareRasterizer.Main.Run();
+    }
+
+    [JSInvokable("TriangleWasm.Components.Pages.SwRast.CanvasDropped")]
+    public static void CanvasDropped() => Window.CanvasDropped(Tutorial.Program.window);
+}

@@ -70,7 +70,7 @@ namespace Silk.NET.Windowing.Internals
         public abstract VideoMode VideoMode { get; }
         public abstract bool IsEventDriven { get; set; }
         public abstract Vector2D<int> FramebufferSize { get; }
-        public abstract void DoEvents();
+        public abstract void CoreDoEvents();
         public abstract void ContinueEvents();
         public abstract Vector2D<int> PointToClient(Vector2D<int> point);
         public abstract Vector2D<int> PointToScreen(Vector2D<int> point);
@@ -277,7 +277,7 @@ namespace Silk.NET.Windowing.Internals
         internal void CanvasDropped()
         {
             emscripten_cancel_main_loop();
-            DoEvents();
+            CoreDoEvents();
             Dispose();
             if (this is INotifyCanvasDropped notify)
             {
@@ -373,7 +373,7 @@ namespace Silk.NET.Windowing.Internals
         void IView.DoEvents()
         {
             _inRenderLoop = true;
-            DoEvents();
+            CoreDoEvents();
             ProcessEvents?.Invoke();
             _inRenderLoop = false;
         }

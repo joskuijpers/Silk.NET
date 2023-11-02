@@ -27,6 +27,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="BepuUtilities" Version="2.5.0-beta.14" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0-rc.2.23480.2" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.0-rc.2.23480.2" PrivateAssets="all" />
     <PackageReference Include="SixLabors.ImageSharp" Version="2.1.6" />
@@ -38,6 +39,7 @@
       <ProjectReference Include="..\..\..\Windowing\Silk.NET.SDL\Silk.NET.SDL.csproj" />
       <ProjectReference Include="..\..\..\Windowing\Silk.NET.Windowing.Common\Silk.NET.Windowing.Common.csproj" />
       <ProjectReference Include="..\..\..\Windowing\Silk.NET.Windowing.Sdl\Silk.NET.Windowing.Sdl.csproj" />
+      <ProjectReference Include="..\BepuPhysicsDemo\BepuPhysicsDemo.csproj" />
       <ProjectReference Include="..\SampleBase\SampleBase.csproj" />
       <EmbeddedResource Include="..\Triangle\shader.vert" Link="shader.vert" />
       <EmbeddedResource Include="..\Triangle\shader.frag" Link="shader.frag" />
@@ -71,6 +73,15 @@
       <EmbeddedResource Include="Tutorial\lighting.frag">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       </EmbeddedResource>
+        <PackageReference Include="BepuPhysics" Version="2.5.0-beta.14" />
+        <None Remove="SwRast\Castle\IndexBuffer.bin" />
+        <EmbeddedResource Include="SwRast\Castle\IndexBuffer.bin" />
+        <None Remove="SwRast\Castle\VertexBuffer.bin" />
+        <EmbeddedResource Include="SwRast\Castle\VertexBuffer.bin" />
+        <None Remove="SwRast\Sponza\IndexBuffer.bin" />
+        <EmbeddedResource Include="SwRast\Sponza\IndexBuffer.bin" />
+        <None Remove="SwRast\Sponza\VertexBuffer.bin" />
+        <EmbeddedResource Include="SwRast\Sponza\VertexBuffer.bin" />
   </ItemGroup>
     
     <Target Name="AddSDL" BeforeTargets="_GenerateManagedToNative" DependsOnTargets="_PrepareForWasmBuildNative">

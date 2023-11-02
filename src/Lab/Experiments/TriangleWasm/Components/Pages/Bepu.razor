@@ -1,0 +1,30 @@
+﻿@page "/bepu"
+@using Silk.NET.Core.Loader
+@using Silk.NET.Core.Native
+@using Silk.NET.Windowing
+@inject IJSRuntime JSRuntime
+
+
+<PageTitle>BEPU Physics Demo</PageTitle>
+
+<h1>BEPU Physics Demo</h1>
+
+<br />
+
+<canvas style="width: 1920px; height: 1080px;" id="canvas" oncontextmenu="event.preventDefault()" onloadend="console.log('added canvas: ' + (Module['canvas'] = document.getElementById('canvas')))" />
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+        await JSRuntime.InvokeVoidAsync("setCanvas", typeof(Bepu).Assembly.GetName().Name, $"{typeof(Bepu).FullName}.CanvasDropped");
+        SearchPathContainer.Platform = UnderlyingPlatform.Browser;
+        Demos.Program.Main();
+    }
+
+    [JSInvokable("TriangleWasm.Components.Pages.Bepu.CanvasDropped")]
+    public static void CanvasDropped() => Window.CanvasDropped(Tutorial.Program.window);
+}

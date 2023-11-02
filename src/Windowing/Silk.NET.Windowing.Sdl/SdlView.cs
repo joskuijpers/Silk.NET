@@ -253,7 +253,7 @@ namespace Silk.NET.Windowing.Sdl
             _vk = null;
         }
 
-        public override void DoEvents()
+        public override void CoreDoEvents()
         {
             ClearEvents();
             do

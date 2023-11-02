@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Runtime.InteropServices;
 using Silk.NET.Core.Contexts;
 using Silk.NET.Core.Loader;
 using Silk.NET.Maths;
@@ -48,7 +49,13 @@ namespace Silk.NET.SDL
                 _window = value;
             }
         }
-
+#if NET6_0_OR_GREATER
+        [DllImport("__Internal_emscripten")]
+        private static extern void* emscripten_webgl_get_current_context();
+        
+        [DllImport("__Internal_emscripten")]
+        private static extern void emscripten_webgl_get_drawing_buffer_size(void* ctx, int* w, int* h);
+#endif
         /// <inheritdoc cref="IGLContext" />
         public Vector2D<int> FramebufferSize
         {
@@ -56,6 +63,13 @@ namespace Silk.NET.SDL
             {
                 AssertCreated();
                 var ret = stackalloc int[2];
+#if NET6_0_OR_GREATER
+                if (OperatingSystem.IsBrowser())
+                {
+                    emscripten_webgl_get_drawing_buffer_size(emscripten_webgl_get_current_context(), ret, &ret[1]);
+                    return *(Vector2D<int>*) ret;
+                }
+#endif
                 _sdl.GLGetDrawableSize(Window, ret, &ret[1]);
                 _sdl.ThrowError();
                 return *(Vector2D<int>*) ret;

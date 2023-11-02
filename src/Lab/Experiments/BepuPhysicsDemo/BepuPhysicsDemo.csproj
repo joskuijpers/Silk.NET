@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!--<OutputType>Exe</OutputType>-->
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Content Include="..\..\..\..\.dockerignore">
+        <Link>.dockerignore</Link>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Core\Silk.NET.Core\Silk.NET.Core.csproj" />
+      <ProjectReference Include="..\..\..\Input\Silk.NET.Input.Common\Silk.NET.Input.Common.csproj" />
+      <ProjectReference Include="..\..\..\Input\Silk.NET.Input.Sdl\Silk.NET.Input.Sdl.csproj" />
+      <ProjectReference Include="..\..\..\OpenGL\Silk.NET.OpenGL\Silk.NET.OpenGL.csproj" />
+      <ProjectReference Include="..\..\..\Windowing\Silk.NET.Windowing.Common\Silk.NET.Windowing.Common.csproj" />
+      <ProjectReference Include="..\..\..\Windowing\Silk.NET.Windowing.Sdl\Silk.NET.Windowing.Sdl.csproj" />
+        <EmbeddedResource Include="*.contentarchive" />
+        <PackageReference Include="SharpFontStandard" Version="4.0.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="BepuPhysics" Version="2.5.0-beta.14" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Update="ContentBuilder\freetype6.dll">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      </None>
+    </ItemGroup>
+
+</Project>

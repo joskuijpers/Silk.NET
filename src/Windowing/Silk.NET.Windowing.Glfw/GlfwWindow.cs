@@ -596,7 +596,7 @@ namespace Silk.NET.Windowing.Glfw
             }
         }
 
-        public override void DoEvents()
+        public override void CoreDoEvents()
         {
             if (IsEventDriven)
             {
